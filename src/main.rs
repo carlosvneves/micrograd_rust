@@ -2,67 +2,105 @@ use core::fmt;
 use std::ops::{Add, Mul};
 
 #[warn(dead_code)]
-
-#[derive(Clone)]
-struct Value{
+#[derive(Clone, Debug)]
+struct Value {
     data: f32,
-    op: String,
-    label: String,
-    
+    op: Option<String>,
+    label: Option<String>,
+    children: Option<Vec<Value>>,
 }
 
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Value=(data={})", self.data)
+
+        let op = match self.op.clone() {
+            Some(op) => op,
+            None => "None".to_string(),
+            
+        };
         
-    } 
+        let label = match self.label.clone() {
+            Some(label) => label,
+            None => "None".to_string(),
+            
+        };
 
-}
-
-impl Add for Value{
-    type Output = Self;
-    fn add(self:Value, other:Value) -> Value{
-        Value{
-            data: self.data + other.data,
-            op: "+".to_string(),
-            label: self.label
-        }
+        let children = match self.children.clone() {
+            Some(children) => children,
+            None => vec![],
+            
+        };
+        
+        let var_name = write!(
+            f,
+            "Value=(data={}, op={:?}, _label={:?}, _children: [{:#?}, {:#?}])",
+            self.data,
+            Some(op),
+            Some(label),
+            Some(children[0].clone()),
+            Some(children[1].clone())
+        );
+        var_name
     }
 }
 
-impl Mul for Value{
+impl Add for Value {
     type Output = Self;
-    fn mul(self:Value, other:Value) -> Value{
-        Value{
+    fn add(self: Value, other: Value) -> Value {
+        let op = "+".to_string();   
+        let label = match self.label.clone() {
+            Some(label) => label,
+            None => "None".to_string(),
+        };
+        let new_value = Value {
+            data: self.data + other.data,
+            op: Some(op),
+            label: Some(label),
+            children: Some(vec![self, other]),
+
+        };
+
+        return new_value;
+    }
+}
+
+impl Mul for Value {
+    type Output = Self;
+    fn mul(self: Value, other: Value) -> Value {
+        let op = "*".to_string();
+
+        let label = match self.label.clone() {
+            Some(label) => label,
+            None => "None".to_string(),
+        };
+
+
+        Self{
             data: self.data * other.data,
-            op: "*".to_string(),
-            label: self.label
+            op: Some(op),
+            label: Some(label),
+            children: Some(vec![self, other]),
         }
     }
 }
 
 fn main() {
-    let  a = Value{
-        data: 1.0,
-        label: "a".to_string(),
-        op: "".to_string(),
+    let a = Value {
+        data: 4.0,
+        label: Some( "a".to_string()),
+        op: None,
+        children: None,
     };
 
-    let  b = Value{
+    let b = Value {
         data: 2.0,
-        label: "b".to_string(),
-        op: "".to_string(),
+        label: Some("b".to_string()),
+        op: None,
+        children: None,
     };
 
-    println!("{}", a);
-    println!("{}", a.label);
-
-    let mut c = a.clone() + b.clone();
-    c.label = "c".to_string();
-    c.op = "+".to_string();
-    println!("{},{},{}", c, c.label, c.op);
     let mut d = a * b;
-    d.label = "d".to_string();
-    d.op = "*".to_string();
-    println!("{},{},{}", d, d.label, d.op);
+    d.label = Some("d".to_string());
+
+    println!("{}",d);
 }
